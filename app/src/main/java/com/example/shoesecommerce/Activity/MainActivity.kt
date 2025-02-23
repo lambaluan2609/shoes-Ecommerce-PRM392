@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -42,32 +44,38 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.shoesecommerce.Model.CategoryModel
+import com.example.shoesecommerce.Model.ItemsModel
+import com.example.shoesecommerce.Model.ListItems
 import com.example.shoesecommerce.Model.SliderModel
 import com.example.shoesecommerce.R
 import com.example.shoesecommerce.ViewModel.MainViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
+import org.checkerframework.common.subtyping.qual.Bottom
 
 class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MainActivityScreen()
+            MainActivityScreen {
+            }
         }
     }
 }
 
 @Composable
-fun MainActivityScreen() {
-    val viewModel=MainViewModel()
+fun MainActivityScreen(onCartClick: () -> Unit) {
+    val viewModel = MainViewModel()
 
-    val banners= remember { mutableStateListOf<SliderModel>() }
+    val banners = remember { mutableStateListOf<SliderModel>() }
     val categories = remember { mutableStateListOf<CategoryModel>() }
+    val Popular = remember { mutableStateListOf<ItemsModel>() }
 
-    var showBannerLoading by remember { mutableStateOf(true)  }
+
+    var showBannerLoading by remember { mutableStateOf(true) }
     var showCategoryLoading by remember { mutableStateOf(true) }
-
+    var showPopularLoading by remember { mutableStateOf(true) }
 
 
     //banner
@@ -75,7 +83,7 @@ fun MainActivityScreen() {
         viewModel.loadBanner().observeForever {
             banners.clear()
             banners.addAll(it)
-            showBannerLoading=false
+            showBannerLoading = false
         }
     }
 
@@ -91,11 +99,20 @@ fun MainActivityScreen() {
             categories.addAll(it)
 
             // Khi dữ liệu đã tải xong, biến này giúp giao diện biết để dừng hiển thị loading.
-            showCategoryLoading=false
+            showCategoryLoading = false
         }
     }
 
-        //Welcome back, name, search and notification
+    //Popular
+    LaunchedEffect(Unit) {
+        viewModel.loadPopular().observeForever {
+            Popular.clear()
+            Popular.addAll(it)
+            showPopularLoading = false
+        }
+    }
+
+    //Welcome back, name, search and notification
     ConstraintLayout(modifier = Modifier.background(Color.White)) {
         val (scrollList, bottomMenu) = createRefs()
         LazyColumn(
@@ -107,23 +124,25 @@ fun MainActivityScreen() {
                     end.linkTo(parent.end)
                     start.linkTo(parent.start)
                 }
-        ){
+        ) {
             item {
-                Row ( modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 70.dp)
-                    .padding(horizontal = 16.dp),
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 70.dp)
+                        .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
 
                 ) {
                     Column {
                         Text("Welcome Back", color = Color.Black)
-                        Text("Lam Ba Luan",
+                        Text(
+                            "Lam Ba Luan",
                             color = Color.Black,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
-                            )
+                        )
                     }
                     Row {
                         Image(
@@ -140,16 +159,16 @@ fun MainActivityScreen() {
             }
             //Banner
             item {
-                if (showBannerLoading){
+                if (showBannerLoading) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .height(200.dp),
                         contentAlignment = Alignment.Center
-                    ){
+                    ) {
                         CircularProgressIndicator() // Hiển thị vòng tròn loading nếu chưa có dữ liệu
                     }
-                }else{
+                } else {
                     Banners(banners)    // Nếu đã có dữ liệu, gọi hàm Banners để hiển thị ảnh
                 }
             }
@@ -158,7 +177,7 @@ fun MainActivityScreen() {
             //Category
             item {
                 Text(
-                    text="Official Brand",
+                    text = "Official Brand",
                     color = Color.Black,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -170,20 +189,46 @@ fun MainActivityScreen() {
             }
 
             item {
-                if(showCategoryLoading){
+                if (showCategoryLoading) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
                         contentAlignment = Alignment.Center
-                    )   {
+                    ) {
                         CircularProgressIndicator()
                     }
                 } else {
                     CategoryList(categories)
                 }
             }
+            item {
+                SectionTitle("Most Popular", "See All")
+            }
+            item {
+                if (showPopularLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    ListItems(Popular)
+                }
+            }
         }
+
+        BottomMenu(
+            modifier = Modifier
+                .fillMaxWidth()
+                .constrainAs(bottomMenu) {
+                    bottom.linkTo(parent.bottom)
+                },
+            onItemClick = onCartClick,
+        )
     }
 }
 
@@ -192,12 +237,13 @@ fun CategoryList(categories: SnapshotStateList<CategoryModel>) {
     var selectedIndex by remember { mutableStateOf(-1) }
     val context = LocalContext.current
 
-    LazyRow(modifier = Modifier
-        .fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp),
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp)
     ) {
 
-        items(categories.size) {index->
+        items(categories.size) { index ->
             CategoryItem(item = categories[index], isSelected = selectedIndex == index,
                 onItemClick = {
                     selectedIndex = index
@@ -213,42 +259,42 @@ fun CategoryList(categories: SnapshotStateList<CategoryModel>) {
 
 @Composable
 fun CategoryItem(item: CategoryModel, isSelected: Boolean, onItemClick: () -> Unit) {
-    Column (
+    Column(
         modifier = Modifier
-            .clickable (onClick = onItemClick), horizontalAlignment = Alignment.CenterHorizontally
-    ){
-            AsyncImage(
-                model = (item.picUrl),
-                contentDescription = item.title,
-                modifier = Modifier
-                    .size(if (isSelected) 60.dp else 50.dp)
-                    .background(
-                        color = if (isSelected) colorResource(R.color.darkBrown) else colorResource(
-                            R.color.lightBrown
-                        ),
-                        shape = RoundedCornerShape(100.dp)
+            .clickable(onClick = onItemClick), horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        AsyncImage(
+            model = (item.picUrl),
+            contentDescription = item.title,
+            modifier = Modifier
+                .size(if (isSelected) 60.dp else 50.dp)
+                .background(
+                    color = if (isSelected) colorResource(R.color.darkBrown) else colorResource(
+                        R.color.lightBrown
                     ),
-                contentScale = ContentScale.Inside,
-                colorFilter = if(isSelected){
-                    ColorFilter.tint(Color.White)
-                } else {
-                    ColorFilter.tint(Color.Black)
-                }
-            )
-        Spacer(modifier = Modifier.padding(top=8.dp ))
+                    shape = RoundedCornerShape(100.dp)
+                ),
+            contentScale = ContentScale.Inside,
+            colorFilter = if (isSelected) {
+                ColorFilter.tint(Color.White)
+            } else {
+                ColorFilter.tint(Color.Black)
+            }
+        )
+        Spacer(modifier = Modifier.padding(top = 8.dp))
         Text(
             text = item.title,
             color = colorResource(R.color.darkBrown),
             fontWeight = FontWeight.Bold
         )
-        }
+    }
 
 }
 
 
 @Composable
 fun SectionTitle(title: String, actionText: String) {
-    Row (
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 24.dp)
@@ -277,14 +323,14 @@ fun Banners(banners: List<SliderModel>) {
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun AutoSlidingCarousel(
-    modifier: Modifier=Modifier.padding(top=16.dp),
-    pagerState: PagerState= remember { PagerState() },
+    modifier: Modifier = Modifier.padding(top = 16.dp),
+    pagerState: PagerState = remember { PagerState() },
     banners: List<SliderModel>
 ) {
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
 
-    Column(modifier = modifier.fillMaxSize() ) {
-        HorizontalPager(count = banners.size, state = pagerState ) { page ->
+    Column(modifier = modifier.fillMaxSize()) {
+        HorizontalPager(count = banners.size, state = pagerState) { page ->
             AsyncImage( // dùng để tải ảnh lên url 1 cách bất đồng bộ , dùng coil libary
                 model = ImageRequest.Builder(LocalContext.current)  //Tạo một yêu cầu tải ảnh trong ngữ cảnh của ứng dụng (LocalContext.current).
                     .data(banners[page].url) //Lấy URL ảnh từ danh sách banners, sử dụng page làm chỉ mục.
@@ -302,38 +348,40 @@ fun AutoSlidingCarousel(
                 .padding(horizontal = 8.dp)
                 .align(Alignment.CenterHorizontally),
             totalDots = banners.size,
-            selectedIndex = if (isDragged)pagerState.currentPage else pagerState.currentPage, //Kiểm tra xem người dùng có đang kéo trang không
+            selectedIndex = if (isDragged) pagerState.currentPage else pagerState.currentPage, //Kiểm tra xem người dùng có đang kéo trang không
             dotSize = 8.dp
         )
     }
 }
+
 @Composable
 fun DotIndicator(
-    modifier: Modifier=Modifier,
+    modifier: Modifier = Modifier,
     totalDots: Int,
     selectedIndex: Int,
-    selectColor: Color= colorResource(R.color.darkBrown),
-    unSelectColor: Color= colorResource(R.color.grey),
+    selectColor: Color = colorResource(R.color.darkBrown),
+    unSelectColor: Color = colorResource(R.color.grey),
     dotSize: Dp
-){
+) {
     LazyRow(
         modifier = modifier
             .wrapContentSize(),
     ) {
-        items(totalDots){ index ->
+        items(totalDots) { index ->
             IndicatorDot(
-                color = if (index==selectedIndex)selectColor else unSelectColor,
+                color = if (index == selectedIndex) selectColor else unSelectColor,
                 size = dotSize
             )
-            if (index!= totalDots-1) {
+            if (index != totalDots - 1) {
                 Spacer(modifier = Modifier.padding(horizontal = 2.dp))
             }
         }
     }
 }
+
 @Composable
 fun IndicatorDot(
-    modifier: Modifier=Modifier,
+    modifier: Modifier = Modifier,
     size: Dp,
     color: Color
 ) {
@@ -344,3 +392,53 @@ fun IndicatorDot(
             .background(color)
     )
 }
+
+@Composable
+fun BottomMenu(modifier: Modifier, onItemClick: () -> Unit) {
+    Row(
+        modifier = modifier
+            .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
+            .background(
+                colorResource(R.color.darkBrown),
+                shape = RoundedCornerShape(10.dp)
+            ),
+        horizontalArrangement = Arrangement.SpaceAround
+    ) {
+        BottomMenuItem(
+            icon = painterResource(id = R.drawable.btn_1),
+            text = "Explorer"
+        )
+        BottomMenuItem(
+            icon = painterResource(id = R.drawable.btn_2),
+            text = "Cart", onItemClick = onItemClick
+        )
+        BottomMenuItem(
+            icon = painterResource(id = R.drawable.btn_3),
+            text = "Favorite"
+        )
+        BottomMenuItem(
+            icon = painterResource(id = R.drawable.btn_4),
+            text = "Orders"
+        )
+        BottomMenuItem(
+            icon = painterResource(id = R.drawable.btn_5),
+            text = "Profile"
+        )
+    }
+}
+
+@Composable
+fun BottomMenuItem(icon: Painter, text: String, onItemClick: (() -> Unit)? = null) {
+    Column(modifier = Modifier
+        .height(70.dp)
+        .clickable { onItemClick?.invoke() }
+        .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(icon, contentDescription = text, tint = Color.White)
+        Spacer(modifier = Modifier.padding(vertical = 4.dp))
+        Text(text, color = Color.White, fontSize = 10.sp)
+    }
+}
+
