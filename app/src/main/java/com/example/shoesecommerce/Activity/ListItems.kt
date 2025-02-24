@@ -1,5 +1,6 @@
 package com.example.shoesecommerce.Activity
 
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import com.example.shoesecommerce.Model.ItemsModel
 
@@ -54,7 +56,10 @@ fun PopularItem(items: List<ItemsModel>, pos: Int) {
                 )
                 .height(195.dp)
                 .clickable {
-
+                    val intent = Intent(context, DetailActivity::class.java).apply {
+                        putExtra("object", items[pos])
+                    }
+                    ContextCompat.startActivity(context, intent, null)
                 },
             contentScale = ContentScale.Crop
         )
@@ -112,7 +117,7 @@ fun ListItems(items: List<ItemsModel>) {
 }
 
 @Composable
-fun ListItemsFullSize(items: List<ItemsModel>){
+fun ListItemsFullSize(items: List<ItemsModel>) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier
@@ -120,7 +125,7 @@ fun ListItemsFullSize(items: List<ItemsModel>){
             .padding(horizontal = 8.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(items.size) {row ->
+        items(items.size) { row ->
             PopularItem(items, row)
         }
     }
