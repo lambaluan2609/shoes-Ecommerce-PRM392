@@ -1,6 +1,5 @@
-package com.example.shoesecommerce.Model
+package com.example.shoesecommerce.Activity
 
-import android.graphics.pdf.models.ListItem
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.shoesecommerce.Model.ItemsModel
 
 @Composable
 fun PopularItem(items: List<ItemsModel>, pos: Int) {
@@ -104,6 +107,21 @@ fun ListItems(items: List<ItemsModel>) {
     ) {
         items(items.size) { index: Int ->
             PopularItem(items, index)
+        }
+    }
+}
+
+@Composable
+fun ListItemsFullSize(items: List<ItemsModel>){
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 8.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(items.size) {row ->
+            PopularItem(items, row)
         }
     }
 }

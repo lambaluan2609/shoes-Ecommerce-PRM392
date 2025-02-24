@@ -71,12 +71,15 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
 
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
     implementation("io.coil-kt:coil-compose:2.2.2")
     implementation ("androidx.constraintlayout:constraintlayout-compose:1.1.0")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.28.0")
     implementation("com.google.accompanist:accompanist-pager:0.28.0")
 
     implementation(libs.androidx.ui.test.android)
+    implementation(libs.material)
+    implementation(libs.runtime.livedata)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -1,6 +1,7 @@
 package com.example.shoesecommerce.Activity
 
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -36,23 +37,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.shoesecommerce.Model.CategoryModel
 import com.example.shoesecommerce.Model.ItemsModel
-import com.example.shoesecommerce.Model.ListItems
 import com.example.shoesecommerce.Model.SliderModel
 import com.example.shoesecommerce.R
 import com.example.shoesecommerce.ViewModel.MainViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
-import org.checkerframework.common.subtyping.qual.Bottom
 
 class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -248,7 +247,11 @@ fun CategoryList(categories: SnapshotStateList<CategoryModel>) {
                 onItemClick = {
                     selectedIndex = index
                     Handler(Looper.getMainLooper()).postDelayed({
-
+                        val itent = Intent(context, ListItemsActivity::class.java).apply {
+                            putExtra("id", categories[index].id.toString())
+                            putExtra("title", categories[index].title)
+                        }
+                        ContextCompat.startActivity(context, itent, null)
                     }, 500)
                 }
             )

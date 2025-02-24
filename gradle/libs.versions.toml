@@ -26,6 +26,7 @@ uiTooling = "1.7.7"
 xlifecycleRuntimeKtx = "2.8.7"
 constraintlayout = "2.2.0"
 uiTestAndroid = "1.6.6"
+runtimeLivedataVersion = "1.7.8"
 
 [libraries]
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
@@ -62,6 +63,7 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "uiTooling" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-ui-test-android = { group = "androidx.compose.ui", name = "ui-test-android", version.ref = "uiTestAndroid" }
+runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedataVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
